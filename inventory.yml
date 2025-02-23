@@ -1,0 +1,18 @@
+all:
+  hosts:
+    srv-mysql01-1234:
+      ansible_host: 192.168.159.138
+      ansible_user: deploy
+      ansible_ssh_pass: "mercimaman"
+      ansible_become: true
+      ansible_become_method: sudo
+      ansible_become_password: "mercimaman"
+
+    srv-web01-1234:
+      ansible_host: 192.168.159.139
+      ansible_user: deploy
+      ansible_ssh_pass: "mercimaman"
+      ansible_become: true
+      ansible_become_method: sudo
+      ansible_become_password: "mercimaman"
+
