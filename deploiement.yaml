@@ -1,0 +1,8 @@
+---
+- name: Déploiement complet de l'environnement
+  hosts: all  # Le groupe défini dans votre inventaire
+  become: yes
+  tasks:
+    - name: Exemple de tâche
+      ansible.builtin.ping:
+
