@@ -1,0 +1,29 @@
+srv-web01-1234 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3.12"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+srv-mysql01-1234 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3.12"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+PLAY [Déploiement complet de l'environnement] **********************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [srv-mysql01-1234]
+ok: [srv-web01-1234]
+
+TASK [Exemple de tâche] ********************************************************
+ok: [srv-mysql01-1234]
+ok: [srv-web01-1234]
+
+PLAY RECAP *********************************************************************
+srv-mysql01-1234           : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+srv-web01-1234             : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
