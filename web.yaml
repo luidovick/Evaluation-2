@@ -1,0 +1,41 @@
+:---
+- name: Déploiement du serveur web
+  hosts: webservers
+  become: yes  # Exécute les commandes en tant que superutilisateur (sudo)
+
+  tasks:
+    - name: Mettre à jour les paquets (Debian/Ubuntu)
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Installer Nginx
+      package:
+        name: nginx
+        state: present
+
+    - name: Démarrer et activer Nginx
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Déployer une page d'accueil
+      copy:
+        content: "<h1>Bienvenue sur mon serveur Nginx</h1>"
+        dest: /var/www/html/index.html
+
+    - name: Ouvrir le port 80 (HTTP) sur le pare-feu (UFW pour Debian/Ubuntu)
+      ufw:
+        rule: allow
+        port: "80"
+        proto: tcp
+      when: ansible_os_family == "Debian"
+
+    - name: Ouvrir le port 80 (firewalld pour CentOS/RHEL)
+      firewalld:
+        service: http
+        permanent: yes
+        state: enabled
+      when: ansible_os_family == "RedHat"
+
