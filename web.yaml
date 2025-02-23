@@ -1,7 +1,11 @@
-:---
-- name: Déploiement du serveur web
+---
+- name: Déploiement du serveur web avec répertoire personnalisé et FQDN
   hosts: webservers
-  become: yes  # Exécute les commandes en tant que superutilisateur (sudo)
+  become: yes  # Exécuter les commandes avec sudo
+
+  vars:
+    fqdn: "www.exemple.com"
+    web_root: "/var/www/mon-site"
 
   tasks:
     - name: Mettre à jour les paquets (Debian/Ubuntu)
@@ -14,28 +18,54 @@
         name: nginx
         state: present
 
-    - name: Démarrer et activer Nginx
-      service:
-        name: nginx
-        state: started
-        enabled: yes
+    - name: Créer le répertoire du site
+      file:
+        path: "{{ web_root }}"
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: "0755"
 
-    - name: Déployer une page d'accueil
+    - name: Déployer la page d'accueil
       copy:
-        content: "<h1>Bienvenue sur mon serveur Nginx</h1>"
-        dest: /var/www/html/index.html
+        content: "<h1>Bienvenue sur {{ fqdn }}</h1>"
+        dest: "{{ web_root }}/index.html"
+        owner: www-data
+        group: www-data
+        mode: "0644"
 
-    - name: Ouvrir le port 80 (HTTP) sur le pare-feu (UFW pour Debian/Ubuntu)
+    - name: Configurer le Virtual Host Nginx
+      template:
+        src: templates/nginx_vhost.j2
+        dest: "/etc/nginx/sites-available/{{ fqdn }}"
+      notify: Restart Nginx
+
+    - name: Activer le Virtual Host
+      file:
+        src: "/etc/nginx/sites-available/{{ fqdn }}"
+        dest: "/etc/nginx/sites-enabled/{{ fqdn }}"
+        state: link
+      notify: Restart Nginx
+
+    - name: Vérifier la configuration Nginx
+      command: nginx -t
+      register: nginx_test
+      changed_when: false
+
+    - name: Afficher le résultat du test Nginx
+      debug:
+        var: nginx_test.stdout_lines
+
+    - name: Ouvrir le port 80 (HTTP)
       ufw:
         rule: allow
         port: "80"
         proto: tcp
       when: ansible_os_family == "Debian"
 
-    - name: Ouvrir le port 80 (firewalld pour CentOS/RHEL)
-      firewalld:
-        service: http
-        permanent: yes
-        state: enabled
-      when: ansible_os_family == "RedHat"
+  handlers:
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted
 
